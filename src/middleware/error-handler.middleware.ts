@@ -40,7 +40,7 @@ import logger from "../utils/logger.util";
  * ```
  */
 export function errorHandler(error: Error | AppError, req: Request, res: Response, _next: NextFunction): void {
-    // Log error
+    // Log error - Capture error details for debugging and monitoring
     logger.error("Error occurred", {
         error: error.message,
         stack: error.stack,
@@ -49,22 +49,23 @@ export function errorHandler(error: Error | AppError, req: Request, res: Respons
         ip: req.ip,
     });
 
-    // Handle known AppError
+    // Handle known AppError - Custom application errors with predefined status codes
     if (error instanceof AppError) {
         res.status(error.statusCode).json({
             success: false,
             error: {
                 message: error.message,
-                ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { stack: error.stack }),
+                ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { stack: error.stack }), // Include stack trace only in development
             },
         });
         return;
     }
 
-    // Handle Prisma errors
+    // Handle Prisma errors - Map database errors to appropriate HTTP status codes
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const prismaError = error;
         if (prismaError.code === "P2002") {
+            // Unique constraint violation - Return 409 Conflict
             res.status(HttpStatusEnum.CONFLICT).json({
                 success: false,
                 error: {
@@ -76,6 +77,7 @@ export function errorHandler(error: Error | AppError, req: Request, res: Respons
         }
 
         if (prismaError.code === "P2025") {
+            // Record not found - Return 404 Not Found
             res.status(HttpStatusEnum.NOT_FOUND).json({
                 success: false,
                 error: {
@@ -87,24 +89,24 @@ export function errorHandler(error: Error | AppError, req: Request, res: Respons
         }
     }
 
-    // Handle validation errors
+    // Handle validation errors - Invalid data format or structure
     if (error instanceof Prisma.PrismaClientValidationError) {
         res.status(HttpStatusEnum.BAD_REQUEST).json({
             success: false,
             error: {
                 message: "Invalid input data",
-                ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { details: error.message }),
+                ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { details: error.message }), // Include details only in development
             },
         });
         return;
     }
 
-    // Handle unknown errors
+    // Handle unknown errors - Fallback for unexpected error types
     res.status(HttpStatusEnum.INTERNAL_SERVER_ERROR).json({
         success: false,
         error: {
-            message: env.NODE_ENV === EnvironmentEnum.PRODUCTION ? "Internal server error" : error.message,
-            ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { stack: error.stack }),
+            message: env.NODE_ENV === EnvironmentEnum.PRODUCTION ? "Internal server error" : error.message, // Hide error details in production
+            ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { stack: error.stack }), // Include stack trace only in development
         },
     });
 }

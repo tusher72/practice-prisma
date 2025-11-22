@@ -29,6 +29,7 @@ export function createUsersRouter(prisma: PrismaClient): Router {
     router.get(
         "/",
         createAsyncHandler(async (_req: Request, res: Response) => {
+            // GET /users - Retrieve all users
             const users = await userService.findAll();
             res.json({
                 success: true,
@@ -41,6 +42,7 @@ export function createUsersRouter(prisma: PrismaClient): Router {
         "/:id",
         validateRequest(getUserSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
+            // GET /users/:id - Retrieve a single user by ID
             const id = req.params.id as unknown as number;
             const user = await userService.findById(id);
             res.json({
@@ -54,6 +56,7 @@ export function createUsersRouter(prisma: PrismaClient): Router {
         "/",
         validateRequest(createUserSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
+            // POST /users - Create a new user
             const user = await userService.create(req.body);
             res.status(HttpStatusEnum.CREATED).json({
                 success: true,
@@ -66,6 +69,7 @@ export function createUsersRouter(prisma: PrismaClient): Router {
         "/:id",
         validateRequest(updateUserSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
+            // PATCH /users/:id - Update an existing user
             const id = req.params.id as unknown as number;
             const user = await userService.update(id, req.body);
             res.json({
@@ -79,9 +83,10 @@ export function createUsersRouter(prisma: PrismaClient): Router {
         "/:id",
         validateRequest(deleteUserSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
+            // DELETE /users/:id - Delete a user
             const id = req.params.id as unknown as number;
             await userService.delete(id);
-            res.status(HttpStatusEnum.NO_CONTENT).end();
+            res.status(HttpStatusEnum.NO_CONTENT).end(); // Return 204 No Content for successful deletion
         }),
     );
 

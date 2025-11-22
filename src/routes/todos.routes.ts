@@ -39,21 +39,21 @@ export function createTodosRouter(prisma: PrismaClient): Router {
         createAsyncHandler(async (req: Request, res: Response) => {
             // Query params are validated and transformed by the validator middleware
             const filters = {
-                userId: typeof req.query.userId === "number" ? req.query.userId : undefined,
-                completed: typeof req.query.completed === "boolean" ? req.query.completed : undefined,
+                userId: typeof req.query.userId === "number" ? req.query.userId : undefined, // Filter by user if provided
+                completed: typeof req.query.completed === "boolean" ? req.query.completed : undefined, // Filter by completion status if provided
                 page:
                     typeof req.query.page === "number"
                         ? req.query.page
-                        : Number.parseInt(String(req.query.page || "1"), 10),
+                        : Number.parseInt(String(req.query.page || "1"), 10), // Default to page 1 if not provided
                 limit:
                     typeof req.query.limit === "number"
                         ? req.query.limit
-                        : Number.parseInt(String(req.query.limit || "10"), 10),
+                        : Number.parseInt(String(req.query.limit || "10"), 10), // Default to 10 items per page
             };
             const result = await todoService.findAll(filters);
             res.json({
                 success: true,
-                ...result,
+                ...result, // Spread pagination metadata and data array
             });
         }),
     );
@@ -62,6 +62,7 @@ export function createTodosRouter(prisma: PrismaClient): Router {
         "/:id",
         validateRequest(getTodoSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
+            // GET /todos/:id - Retrieve a single todo by ID
             const id = req.params.id as unknown as number;
             const todo = await todoService.findById(id);
             res.json({
@@ -75,9 +76,10 @@ export function createTodosRouter(prisma: PrismaClient): Router {
         "/",
         validateRequest(createTodoSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
+            // POST /todos - Create a new todo
             const todo = await todoService.create({
                 title: req.body.title,
-                userId: req.body.userId,
+                userId: req.body.userId, // Optional user association
             });
             res.status(HttpStatusEnum.CREATED).json({
                 success: true,
@@ -90,6 +92,7 @@ export function createTodosRouter(prisma: PrismaClient): Router {
         "/:id",
         validateRequest(updateTodoSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
+            // PATCH /todos/:id - Update an existing todo
             const id = req.params.id as unknown as number;
             const todo = await todoService.update(id, req.body);
             res.json({
@@ -103,9 +106,10 @@ export function createTodosRouter(prisma: PrismaClient): Router {
         "/:id",
         validateRequest(deleteTodoSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
+            // DELETE /todos/:id - Delete a todo
             const id = req.params.id as unknown as number;
             await todoService.delete(id);
-            res.status(HttpStatusEnum.NO_CONTENT).end();
+            res.status(HttpStatusEnum.NO_CONTENT).end(); // Return 204 No Content for successful deletion
         }),
     );
 

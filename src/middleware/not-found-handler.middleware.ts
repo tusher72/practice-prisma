@@ -23,7 +23,7 @@ export function notFoundHandler(req: Request, res: Response): void {
     res.status(HttpStatusEnum.NOT_FOUND).json({
         success: false,
         error: {
-            message: `Route ${req.method} ${req.path} not found`,
+            message: `Route ${req.method} ${req.path} not found`, // Include method and path for debugging
         },
     });
 }

@@ -39,10 +39,10 @@ export class UserService {
     async findAll() {
         try {
             return await this.prisma.user.findMany({
-                orderBy: { id: "desc" },
+                orderBy: { id: "desc" }, // Return newest users first
                 include: {
                     todos: {
-                        orderBy: { createdAt: "desc" },
+                        orderBy: { createdAt: "desc" }, // Include todos ordered by newest first
                     },
                 },
             });
@@ -117,13 +117,13 @@ export class UserService {
      */
     async create(data: Prisma.UserCreateInput) {
         try {
-            // Check if email already exists
+            // Check if email already exists - Prevent duplicate email addresses
             const existingUser = await this.prisma.user.findUnique({
                 where: { email: data.email },
             });
 
             if (existingUser) {
-                throw new ConflictError("User with this email already exists");
+                throw new ConflictError("User with this email already exists"); // Return 409 Conflict
             }
 
             return await this.prisma.user.create({
@@ -132,14 +132,14 @@ export class UserService {
                     email: data.email,
                 },
                 include: {
-                    todos: true,
+                    todos: true, // Include todos in response for immediate access
                 },
             });
         } catch (error) {
             if (error instanceof ConflictError) {
-                throw error;
+                throw error; // Re-throw known errors without logging
             }
-            logger.error("Error creating user", error);
+            logger.error("Error creating user", error); // Log unexpected errors
             throw error;
         }
     }
@@ -170,17 +170,17 @@ export class UserService {
      */
     async update(id: number, data: Prisma.UserUpdateInput) {
         try {
-            // Check if user exists
+            // Check if user exists - Throws NotFoundError if user doesn't exist
             await this.findById(id);
 
-            // If email is being updated, check for conflicts
+            // If email is being updated, check for conflicts - Prevent duplicate emails
             if (data.email) {
                 const existingUser = await this.prisma.user.findUnique({
                     where: { email: data.email as string },
                 });
 
                 if (existingUser && existingUser.id !== id) {
-                    throw new ConflictError("User with this email already exists");
+                    throw new ConflictError("User with this email already exists"); // Return 409 if email belongs to another user
                 }
             }
 
@@ -189,7 +189,7 @@ export class UserService {
                 data,
                 include: {
                     todos: {
-                        orderBy: { createdAt: "desc" },
+                        orderBy: { createdAt: "desc" }, // Return todos ordered by newest first
                     },
                 },
             });
@@ -222,16 +222,16 @@ export class UserService {
      */
     async delete(id: number) {
         try {
-            await this.findById(id);
+            await this.findById(id); // Verify user exists before deleting
 
             await this.prisma.user.delete({
                 where: { id },
             });
         } catch (error) {
             if (error instanceof NotFoundError) {
-                throw error;
+                throw error; // Re-throw known errors without logging
             }
-            logger.error(`Error deleting user with id ${id}`, error);
+            logger.error(`Error deleting user with id ${id}`, error); // Log unexpected errors
             throw error;
         }
     }

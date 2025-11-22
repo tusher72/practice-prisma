@@ -26,25 +26,26 @@ export function createHealthRouter(): Router {
         "/",
         createAsyncHandler(async (_req: Request, res: Response) => {
             try {
-                // Check database connection
+                // Check database connection - Simple query to verify database is accessible
                 await prisma.$queryRaw`SELECT 1`;
 
                 res.json({
                     success: true,
                     status: "healthy",
-                    timestamp: new Date().toISOString(),
+                    timestamp: new Date().toISOString(), // Include timestamp for monitoring
                     services: {
-                        database: "connected",
+                        database: "connected", // Indicate database is operational
                     },
                 });
             } catch (error: unknown) {
                 logger.error("Health check failed", error);
                 res.status(HttpStatusEnum.SERVICE_UNAVAILABLE).json({
+                    // Return 503 if database is unavailable
                     success: false,
                     status: "unhealthy",
                     timestamp: new Date().toISOString(),
                     services: {
-                        database: "disconnected",
+                        database: "disconnected", // Indicate database connection failure
                     },
                 });
             }

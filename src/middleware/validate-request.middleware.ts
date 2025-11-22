@@ -34,27 +34,28 @@ export function validateRequest(schema: ZodSchema) {
                 query: req.query,
                 params: req.params,
             });
-            // Store validated and transformed values back into request
+            // Store validated and transformed values back into request - Apply type transformations from schema
             if (validated.body) req.body = validated.body;
             if (validated.query) {
-                // Merge validated query params into req.query
+                // Merge validated query params into req.query - Preserve Express query object structure
                 Object.assign(req.query, validated.query);
             }
             if (validated.params) {
-                // Merge validated params into req.params
+                // Merge validated params into req.params - Preserve Express params object structure
                 Object.assign(req.params, validated.params);
             }
-            next();
+            next(); // Continue to next middleware if validation passes
         } catch (error: unknown) {
             if (error instanceof ZodError) {
+                // Transform Zod validation errors into structured error details
                 const details = error.errors.map((validationError) => ({
-                    path: validationError.path.join("."),
+                    path: validationError.path.join("."), // Create dot-notation path for nested fields
                     message: validationError.message,
                     code: validationError.code,
                 }));
-                next(new ValidationError("Validation failed", details));
+                next(new ValidationError("Validation failed", details)); // Pass to error handler
             } else {
-                next(error as Error);
+                next(error as Error); // Pass through unexpected errors
             }
         }
     };

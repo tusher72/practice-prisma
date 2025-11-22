@@ -16,14 +16,14 @@ import logger from "./utils/logger.util";
 // Express application instance.
 const app = express();
 
-// Security middleware
+// Security middleware - Sets secure HTTP headers to protect against common vulnerabilities
 app.use(helmet());
 
-// CORS middleware
+// CORS middleware - Enables cross-origin resource sharing with configurable allowed origins
 app.use(
     cors({
-        origin: env.CORS_ORIGIN === "*" ? "*" : env.CORS_ORIGIN.split(","),
-        credentials: true,
+        origin: env.CORS_ORIGIN === "*" ? "*" : env.CORS_ORIGIN.split(","), // Support multiple origins or wildcard
+        credentials: true, // Allow cookies and authentication headers
     }),
 );
 
@@ -52,22 +52,22 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-// Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+// Body parsing middleware - Parse JSON and URL-encoded request bodies with size limits
+app.use(express.json({ limit: "10mb" })); // Prevent large payload attacks
+app.use(express.urlencoded({ extended: true, limit: "10mb" })); // Support nested objects in form data
 
-// Request logging
+// Request logging - Log all HTTP requests for monitoring and debugging
 app.use(requestLogger);
 
-// Routes
-app.use("/health", createHealthRouter());
-app.use("/users", createUsersRouter(prisma));
-app.use("/todos", createTodosRouter(prisma));
+// Routes - Register application routes in order of specificity
+app.use("/health", createHealthRouter()); // Health check endpoints
+app.use("/users", createUsersRouter(prisma)); // User CRUD operations
+app.use("/todos", createTodosRouter(prisma)); // Todo CRUD operations
 
-// 404 handler
+// 404 handler - Catch all unmatched routes and return standardized error
 app.use(notFoundHandler);
 
-// Error handler (must be last)
+// Error handler (must be last) - Centralized error handling for all routes
 app.use(errorHandler);
 
 /**
@@ -77,12 +77,12 @@ app.use(errorHandler);
  */
 const server = app.listen(env.PORT, async () => {
     try {
-        await connectDatabase();
+        await connectDatabase(); // Establish database connection before accepting requests
         logger.info(`Server listening on http://localhost:${env.PORT}`);
         logger.info(`Environment: ${env.NODE_ENV}`);
     } catch (error) {
         logger.error("Failed to start server", error);
-        process.exit(1);
+        process.exit(1); // Exit with error code if startup fails
     }
 });
 
@@ -104,19 +104,20 @@ const handleShutdown = async (signal: string): Promise<void> => {
     logger.info(`${signal} received. Starting graceful shutdown...`);
 
     server.close(async () => {
+        // Stop accepting new connections but allow existing requests to complete
         logger.info("HTTP server closed");
 
         try {
-            await disconnectDatabase();
+            await disconnectDatabase(); // Close database connections gracefully
             logger.info("Graceful shutdown completed");
-            process.exit(0);
+            process.exit(0); // Exit successfully
         } catch (error) {
             logger.error("Error during shutdown", error);
-            process.exit(1);
+            process.exit(1); // Exit with error if shutdown fails
         }
     });
 
-    // Force shutdown after 10 seconds
+    // Force shutdown after 10 seconds - Prevents hanging if graceful shutdown stalls
     setTimeout(() => {
         logger.error("Forced shutdown after timeout");
         process.exit(1);
@@ -126,16 +127,16 @@ const handleShutdown = async (signal: string): Promise<void> => {
 process.on("SIGTERM", async (): Promise<void> => await handleShutdown("SIGTERM"));
 process.on("SIGINT", async (): Promise<void> => await handleShutdown("SIGINT"));
 
-// Handle unhandled promise rejections
+// Handle unhandled promise rejections - Catch async errors that weren't properly handled
 process.on("unhandledRejection", async (reason: Error): Promise<void> => {
     logger.error("Unhandled Promise Rejection", reason);
-    await handleShutdown("unhandledRejection");
+    await handleShutdown("unhandledRejection"); // Gracefully shutdown to prevent data corruption
 });
 
-// Handle uncaught exceptions
+// Handle uncaught exceptions - Catch synchronous errors that weren't caught
 process.on("uncaughtException", async (error: Error): Promise<void> => {
     logger.error("Uncaught Exception", error);
-    await handleShutdown("uncaughtException");
+    await handleShutdown("uncaughtException"); // Gracefully shutdown to prevent data corruption
 });
 
 export default app;

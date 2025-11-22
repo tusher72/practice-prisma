@@ -21,19 +21,20 @@ import logger from "../utils/logger.util";
  * ```
  */
 export function requestLogger(req: Request, res: Response, next: NextFunction): void {
-    const start = Date.now();
+    const start = Date.now(); // Record start time for duration calculation
 
     res.on("finish", () => {
-        const duration = Date.now() - start;
+        // Log after response is sent - Ensures accurate duration and doesn't block response
+        const duration = Date.now() - start; // Calculate request processing time
         logger.info("HTTP Request", {
             method: req.method,
             path: req.path,
             statusCode: res.statusCode,
-            duration: `${duration}ms`,
-            ip: req.ip,
-            userAgent: req.get("user-agent"),
+            duration: `${duration}ms`, // Include duration for performance monitoring
+            ip: req.ip, // Log client IP for security and analytics
+            userAgent: req.get("user-agent"), // Log user agent for debugging
         });
     });
 
-    next();
+    next(); // Continue to next middleware
 }

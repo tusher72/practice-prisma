@@ -54,35 +54,36 @@ export class TodoService {
      */
     async findAll(filters?: { userId?: number; completed?: boolean; page?: number; limit?: number }) {
         try {
-            const page = filters?.page || 1;
-            const limit = filters?.limit || 10;
-            const skip = (page - 1) * limit;
+            const page = filters?.page || 1; // Default to first page
+            const limit = filters?.limit || 10; // Default to 10 items per page
+            const skip = (page - 1) * limit; // Calculate offset for pagination
 
             const where: Prisma.TodoWhereInput = {};
             if (filters?.userId !== undefined) {
-                where.userId = filters.userId;
+                where.userId = filters.userId; // Add user filter if provided
             }
             if (filters?.completed !== undefined) {
-                where.completed = filters.completed;
+                where.completed = filters.completed; // Add completion status filter if provided
             }
 
             const [todos, total] = await Promise.all([
+                // Fetch todos and total count in parallel for better performance
                 this.prisma.todo.findMany({
                     where,
-                    orderBy: { createdAt: "desc" },
+                    orderBy: { createdAt: "desc" }, // Show newest todos first
                     include: {
                         user: {
                             select: {
                                 id: true,
                                 name: true,
-                                email: true,
+                                email: true, // Include only necessary user fields
                             },
                         },
                     },
-                    skip,
-                    take: limit,
+                    skip, // Skip items for pagination
+                    take: limit, // Limit number of items returned
                 }),
-                this.prisma.todo.count({ where }),
+                this.prisma.todo.count({ where }), // Count total matching todos
             ]);
 
             return {
@@ -91,7 +92,7 @@ export class TodoService {
                     page,
                     limit,
                     total,
-                    totalPages: Math.ceil(total / limit),
+                    totalPages: Math.ceil(total / limit), // Calculate total pages for pagination UI
                 },
             };
         } catch (error) {
@@ -124,14 +125,14 @@ export class TodoService {
                         select: {
                             id: true,
                             name: true,
-                            email: true,
+                            email: true, // Include user details for display
                         },
                     },
                 },
             });
 
             if (!todo) {
-                throw new NotFoundError("Todo", id);
+                throw new NotFoundError("Todo", id); // Return 404 if todo doesn't exist
             }
 
             return todo;
@@ -171,21 +172,22 @@ export class TodoService {
      */
     async create(data: { title: string; completed?: boolean; userId?: number }) {
         try {
-            // If userId is provided, verify user exists
+            // If userId is provided, verify user exists - Ensure referential integrity
             if (data.userId) {
                 const user = await this.prisma.user.findUnique({
                     where: { id: data.userId },
                 });
 
                 if (!user) {
-                    throw new NotFoundError("User", data.userId);
+                    throw new NotFoundError("User", data.userId); // Return 404 if user doesn't exist
                 }
             }
 
             const createData: Prisma.TodoCreateInput = {
                 title: data.title,
-                completed: data.completed || false,
+                completed: data.completed || false, // Default to false if not provided
                 ...(data.userId && {
+                    // Conditionally connect to user if userId is provided
                     user: {
                         connect: { id: data.userId },
                     },
@@ -238,7 +240,7 @@ export class TodoService {
      */
     async update(id: number, data: Prisma.TodoUpdateInput) {
         try {
-            await this.findById(id);
+            await this.findById(id); // Verify todo exists before updating
 
             return await this.prisma.todo.update({
                 where: { id },
@@ -248,16 +250,16 @@ export class TodoService {
                         select: {
                             id: true,
                             name: true,
-                            email: true,
+                            email: true, // Include user details in response
                         },
                     },
                 },
             });
         } catch (error) {
             if (error instanceof NotFoundError) {
-                throw error;
+                throw error; // Re-throw known errors without logging
             }
-            logger.error(`Error updating todo with id ${id}`, error);
+            logger.error(`Error updating todo with id ${id}`, error); // Log unexpected errors
             throw error;
         }
     }
@@ -281,16 +283,16 @@ export class TodoService {
      */
     async delete(id: number) {
         try {
-            await this.findById(id);
+            await this.findById(id); // Verify todo exists before deleting
 
             await this.prisma.todo.delete({
                 where: { id },
             });
         } catch (error) {
             if (error instanceof NotFoundError) {
-                throw error;
+                throw error; // Re-throw known errors without logging
             }
-            logger.error(`Error deleting todo with id ${id}`, error);
+            logger.error(`Error deleting todo with id ${id}`, error); // Log unexpected errors
             throw error;
         }
     }

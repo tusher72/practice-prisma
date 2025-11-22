@@ -31,6 +31,7 @@ const POOL = new Pool({
  * @event Pool#error
  */
 POOL.on("error", (error) => {
+    // Handle pool errors - Catch errors on idle connections (network issues, database restarts)
     logger.error("Unexpected error on idle client", error);
 });
 
@@ -55,11 +56,11 @@ const ADAPTER = new PrismaPg(POOL);
  * @constant {PrismaClient}
  */
 export const prisma = new PrismaClient({
-    adapter: ADAPTER,
+    adapter: ADAPTER, // Use connection pool adapter for better performance
     log: [
-        { level: "query", emit: "event" },
-        { level: "error", emit: "event" },
-        { level: "warn", emit: "event" },
+        { level: "query", emit: "event" }, // Emit query events for logging
+        { level: "error", emit: "event" }, // Emit error events for monitoring
+        { level: "warn", emit: "event" }, // Emit warning events for debugging
     ],
 });
 
@@ -72,6 +73,7 @@ export const prisma = new PrismaClient({
  * @param {number} queryEvent.duration - Query execution time in milliseconds
  */
 prisma.$on("query", (queryEvent) => {
+    // Log all database queries - Useful for debugging and performance analysis
     logger.debug("Query", { query: queryEvent.query, duration: `${queryEvent.duration}ms` });
 });
 
@@ -82,6 +84,7 @@ prisma.$on("query", (queryEvent) => {
  * @param {Object} errorEvent - Error event object
  */
 prisma.$on("error", (errorEvent) => {
+    // Log database errors - Critical for monitoring and troubleshooting
     logger.error("Prisma error", errorEvent);
 });
 
@@ -92,6 +95,7 @@ prisma.$on("error", (errorEvent) => {
  * @param {Object} warningEvent - Warning event object
  */
 prisma.$on("warn", (warningEvent) => {
+    // Log database warnings - Helps identify potential issues before they become errors
     logger.warn("Prisma warning", warningEvent);
 });
 
@@ -114,11 +118,11 @@ prisma.$on("warn", (warningEvent) => {
  */
 export async function connectDatabase(): Promise<void> {
     try {
-        await prisma.$connect();
+        await prisma.$connect(); // Establish connection to database using connection pool
         logger.info("Database connected successfully");
     } catch (error) {
         logger.error("Failed to connect to database", error);
-        throw error;
+        throw error; // Re-throw to allow caller to handle connection failure
     }
 }
 
@@ -142,11 +146,11 @@ export async function connectDatabase(): Promise<void> {
  */
 export async function disconnectDatabase(): Promise<void> {
     try {
-        await prisma.$disconnect();
-        await POOL.end();
+        await prisma.$disconnect(); // Close all Prisma client connections
+        await POOL.end(); // Close all pool connections and prevent new connections
         logger.info("Database disconnected successfully");
     } catch (error) {
         logger.error("Error disconnecting from database", error);
-        throw error;
+        throw error; // Re-throw to allow caller to handle disconnection failure
     }
 }

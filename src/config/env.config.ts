@@ -44,16 +44,17 @@ const ENV_SCHEMA = z.object({
  */
 function buildDatabaseUrl(): string {
     if (process.env.DATABASE_URL) {
-        return process.env.DATABASE_URL;
+        return process.env.DATABASE_URL; // Use provided DATABASE_URL if available
     }
 
-    const username = process.env.DB_USERNAME || "postgres";
-    const password = process.env.DB_PASSWORD || "secret";
-    const host = process.env.DB_HOST || "localhost";
-    const port = process.env.FORWARD_DB_PORT || process.env.DB_PORT || 5432;
-    const database = process.env.DB_DATABASE || "postgres";
+    // Construct connection string from individual environment variables
+    const username = process.env.DB_USERNAME || "postgres"; // Default to postgres user
+    const password = process.env.DB_PASSWORD || "secret"; // Default password for development
+    const host = process.env.DB_HOST || "localhost"; // Default to localhost
+    const port = process.env.FORWARD_DB_PORT || process.env.DB_PORT || 5432; // Prefer forwarded port for Docker
+    const database = process.env.DB_DATABASE || "postgres"; // Default database name
 
-    return `postgresql://${username}:${password}@${host}:${port}/${database}?schema=public`;
+    return `postgresql://${username}:${password}@${host}:${port}/${database}?schema=public`; // Build PostgreSQL connection string
 }
 
 /**
