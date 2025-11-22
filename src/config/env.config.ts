@@ -1,6 +1,6 @@
 import { z } from "zod";
 import "dotenv/config";
-import { EnvironmentEnum } from "../enums/environment";
+import { EnvironmentEnum } from "../enums/environment.enum";
 
 /**
  * Zod schema for environment variable validation.

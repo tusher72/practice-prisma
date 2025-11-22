@@ -1,6 +1,6 @@
 import winston from "winston";
-import env from "../config/env";
-import { EnvironmentEnum } from "../enums/environment";
+import env from "../config/env.config";
+import { EnvironmentEnum } from "../enums/environment.enum";
 
 /**
  * Winston logger instance configured for the application.

@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { TodoService } from "../services/todo.service";
-import { asyncHandler } from "../middleware/asyncHandler";
-import { validateRequest } from "../middleware/validateRequest";
+import { asyncHandler } from "../middleware/async-handler.middleware";
+import { validateRequest } from "../middleware/validate-request.middleware";
 import {
     createTodoSchema,
     updateTodoSchema,
@@ -10,7 +10,7 @@ import {
     deleteTodoSchema,
     getTodosSchema,
 } from "../validators/todo.validator";
-import { HttpStatusEnum } from "../enums/httpStatus";
+import { HttpStatusEnum } from "../enums/http-status.enum";
 
 /**
  * Creates and configures the todos router.

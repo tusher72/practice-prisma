@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import logger from "../utils/logger";
+import logger from "../utils/logger.util";
 
 /**
  * Express middleware for logging HTTP requests.

@@ -1,4 +1,4 @@
-import { HttpStatusEnum } from "../enums/httpStatus";
+import { HttpStatusEnum } from "../enums/http-status.enum";
 
 /**
  * Base application error class.

@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { Prisma } from "@prisma/client";
-import { AppError } from "../types/errors";
-import logger from "../utils/logger";
-import env from "../config/env";
-import { HttpStatusEnum } from "../enums/httpStatus";
-import { EnvironmentEnum } from "../enums/environment";
+import { AppError } from "../types/errors.types";
+import logger from "../utils/logger.util";
+import env from "../config/env.config";
+import { HttpStatusEnum } from "../enums/http-status.enum";
+import { EnvironmentEnum } from "../enums/environment.enum";
 
 /**
  * Express error handling middleware.

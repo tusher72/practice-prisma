@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { HttpStatusEnum } from "../enums/httpStatus";
+import { HttpStatusEnum } from "../enums/http-status.enum";
 
 /**
  * Express middleware for handling 404 Not Found errors.

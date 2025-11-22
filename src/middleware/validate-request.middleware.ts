@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodSchema, ZodError } from "zod";
-import { ValidationError } from "../types/errors";
+import { ValidationError } from "../types/errors.types";
 
 /**
  * Creates Express middleware for request validation.

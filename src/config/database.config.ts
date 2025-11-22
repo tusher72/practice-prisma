@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
-import env from "./env";
-import logger from "../utils/logger";
+import env from "./env.config";
+import logger from "../utils/logger.util";
 
 /**
  * PostgreSQL connection pool configuration.

@@ -1,6 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { NotFoundError, ConflictError } from "../types/errors";
-import logger from "../utils/logger";
+import { NotFoundError, ConflictError } from "../types/errors.types";
+import logger from "../utils/logger.util";
 
 /**
  * Service class for user-related operations.
