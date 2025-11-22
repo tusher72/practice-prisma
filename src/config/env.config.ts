@@ -37,10 +37,11 @@ const ENV_SCHEMA = z.object({
  * 1. Uses DATABASE_URL if provided directly
  * 2. Otherwise constructs from individual DB_* variables
  *
+ * @function buildDatabaseUrl
  * @returns {string} PostgreSQL connection string
  * @private
  */
-function getDatabaseUrl(): string {
+function buildDatabaseUrl(): string {
     if (process.env.DATABASE_URL) {
         return process.env.DATABASE_URL;
     }
@@ -65,7 +66,7 @@ function getDatabaseUrl(): string {
  */
 const env = ENV_SCHEMA.parse({
     ...process.env,
-    DATABASE_URL: getDatabaseUrl(),
+    DATABASE_URL: buildDatabaseUrl(),
 });
 
 export default env;

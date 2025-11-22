@@ -95,11 +95,11 @@ const server = app.listen(env.PORT, async () => {
  * Includes a 10-second timeout to force shutdown if graceful
  * shutdown takes too long.
  * @async
- * @function shutdown
+ * @function handleShutdown
  * @param {string} signal - The signal that triggered shutdown (SIGTERM, SIGINT, etc.)
  * @returns {Promise<void>}
  */
-const shutdown = async (signal: string): Promise<void> => {
+const handleShutdown = async (signal: string): Promise<void> => {
     logger.info(`${signal} received. Starting graceful shutdown...`);
 
     server.close(async () => {
@@ -122,19 +122,19 @@ const shutdown = async (signal: string): Promise<void> => {
     }, 10000);
 };
 
-process.on("SIGTERM", async (): Promise<void> => await shutdown("SIGTERM"));
-process.on("SIGINT", async (): Promise<void> => await shutdown("SIGINT"));
+process.on("SIGTERM", async (): Promise<void> => await handleShutdown("SIGTERM"));
+process.on("SIGINT", async (): Promise<void> => await handleShutdown("SIGINT"));
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", async (reason: Error): Promise<void> => {
     logger.error("Unhandled Promise Rejection", reason);
-    await shutdown("unhandledRejection");
+    await handleShutdown("unhandledRejection");
 });
 
 // Handle uncaught exceptions
 process.on("uncaughtException", async (error: Error): Promise<void> => {
     logger.error("Uncaught Exception", error);
-    await shutdown("uncaughtException");
+    await handleShutdown("uncaughtException");
 });
 
 export default app;

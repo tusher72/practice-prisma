@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../config/database.config";
-import { asyncHandler } from "../middleware/async-handler.middleware";
+import { createAsyncHandler } from "../middleware/async-handler.middleware";
 import logger from "../utils/logger.util";
 import { HttpStatusEnum } from "../enums/http-status.enum";
 
@@ -23,7 +23,7 @@ export function createHealthRouter(): Router {
 
     router.get(
         "/",
-        asyncHandler(async (_req: Request, res: Response) => {
+        createAsyncHandler(async (_req: Request, res: Response) => {
             try {
                 // Check database connection
                 await prisma.$queryRaw`SELECT 1`;

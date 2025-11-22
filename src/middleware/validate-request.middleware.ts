@@ -22,7 +22,7 @@ import { ValidationError } from "../types/errors.types";
  *   })
  * });
  *
- * router.post("/users", validateRequest(createUserSchema), asyncHandler(...));
+ * router.post("/users", validateRequest(createUserSchema), createAsyncHandler(...));
  * ```
  */
 export function validateRequest(schema: ZodSchema) {

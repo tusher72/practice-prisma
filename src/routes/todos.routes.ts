@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { TodoService } from "../services/todo.service";
-import { asyncHandler } from "../middleware/async-handler.middleware";
+import { createAsyncHandler } from "../middleware/async-handler.middleware";
 import { validateRequest } from "../middleware/validate-request.middleware";
 import {
     createTodoSchema,
@@ -35,7 +35,7 @@ export function createTodosRouter(prisma: PrismaClient): Router {
     router.get(
         "/",
         validateRequest(getTodosSchema),
-        asyncHandler(async (req: Request, res: Response) => {
+        createAsyncHandler(async (req: Request, res: Response) => {
             // Query params are validated and transformed by the validator middleware
             const filters = {
                 userId: typeof req.query.userId === "number" ? req.query.userId : undefined,
@@ -60,7 +60,7 @@ export function createTodosRouter(prisma: PrismaClient): Router {
     router.get(
         "/:id",
         validateRequest(getTodoSchema),
-        asyncHandler(async (req: Request, res: Response) => {
+        createAsyncHandler(async (req: Request, res: Response) => {
             const id = req.params.id as unknown as number;
             const todo = await todoService.findById(id);
             res.json({
@@ -73,7 +73,7 @@ export function createTodosRouter(prisma: PrismaClient): Router {
     router.post(
         "/",
         validateRequest(createTodoSchema),
-        asyncHandler(async (req: Request, res: Response) => {
+        createAsyncHandler(async (req: Request, res: Response) => {
             const todo = await todoService.create({
                 title: req.body.title,
                 userId: req.body.userId,
@@ -88,7 +88,7 @@ export function createTodosRouter(prisma: PrismaClient): Router {
     router.patch(
         "/:id",
         validateRequest(updateTodoSchema),
-        asyncHandler(async (req: Request, res: Response) => {
+        createAsyncHandler(async (req: Request, res: Response) => {
             const id = req.params.id as unknown as number;
             const todo = await todoService.update(id, req.body);
             res.json({
@@ -101,7 +101,7 @@ export function createTodosRouter(prisma: PrismaClient): Router {
     router.delete(
         "/:id",
         validateRequest(deleteTodoSchema),
-        asyncHandler(async (req: Request, res: Response) => {
+        createAsyncHandler(async (req: Request, res: Response) => {
             const id = req.params.id as unknown as number;
             await todoService.delete(id);
             res.status(HttpStatusEnum.NO_CONTENT).end();
