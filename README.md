@@ -214,41 +214,20 @@ curl "http://localhost:3000/resources?filter=value&page=1&limit=10"
 ## 📁 Project Structure
 
 ```
-practice-prisma/
-├── src/
-│   ├── config/          # Configuration files
-│   │   ├── database.config.ts
-│   │   └── env.config.ts
-│   ├── enums/           # Enum definitions
-│   │   ├── environment.enum.ts
-│   │   └── http-status.enum.ts
-│   ├── middleware/      # Express middleware
-│   │   ├── async-handler.middleware.ts
-│   │   ├── error-handler.middleware.ts
-│   │   ├── not-found-handler.middleware.ts
-│   │   ├── request-logger.middleware.ts
-│   │   └── validate-request.middleware.ts
-│   ├── routes/          # Route handlers
-│   │   ├── health.routes.ts
-│   │   └── *.routes.ts
-│   ├── services/        # Business logic
-│   │   └── *.service.ts
-│   ├── types/           # TypeScript types
-│   │   └── errors.types.ts
-│   ├── utils/           # Utility functions
-│   │   └── logger.util.ts
-│   ├── validators/      # Validation schemas
-│   │   └── *.validator.ts
-│   └── server.ts        # Application entry point
-├── prisma/
-│   ├── schema.prisma    # Database schema
-│   ├── seed.ts          # Database seeding
-│   └── migrations/      # Database migrations
-├── logs/                # Application logs
-├── docker-compose.yaml  # Docker configuration
-├── package.json
-├── tsconfig.json
-└── README.md
+src/
+├── config/                                 # Configuration files
+├── constants/                              # Constant definitions
+├── enums/                                  # Enum definitions
+├── middleware/                             # Express middleware
+├── repositories/                           # Data access layer (repository pattern)
+│   └── <resource-name>/                    # resource repository
+│       ├── <resource-name>.repository.ts   # repository implementation
+│       └── <resource-name>.types.ts        # repository types
+├── routes/                                 # Route handlers
+├── services/                               # Business logic services
+├── types/                                  # TypeScript type definitions
+├── utils/                                  # Utility functions
+└── validators/                             # Validation schemas
 ```
 
 ## 🔒 Security Features
@@ -340,20 +319,32 @@ The application uses a hierarchy of custom error classes for consistent error ha
 
 ## 🏗️ Architecture
 
-### Service Layer Pattern
+### Repository Pattern
 
-Business logic is separated from route handlers following clean architecture principles:
+The application follows the **Repository Pattern** to separate data access logic from business logic:
 
 - **Routes** - Handle HTTP requests/responses and route definitions
-- **Services** - Contain business logic and data access operations
+- **Services** - Contain business logic, orchestrate operations, handle validation
+- **Repositories** - Handle all database queries and commands, abstract data access
+- **Types** - Define request/response types for repositories
 - **Validators** - Validate and sanitize input data
 - **Middleware** - Handle cross-cutting concerns (logging, error handling, authentication)
+
+#### Repository Structure
+
+Repositories are organized by resource in separate folders:
+
+- Each resource has its own folder (e.g., `repositories/users/`, `repositories/todos/`)
+- Each folder contains the repository implementation and types file
+- All database operations are encapsulated in repositories
+- Services call repositories, never Prisma directly
 
 ### Code Organization
 
 - **Separation of Concerns** - Each module has a single responsibility
+- **Repository Pattern** - Data access layer abstraction
 - **DRY Principle** - No code duplication
-- **Type Safety** - Full TypeScript coverage
+- **Type Safety** - Full TypeScript coverage with reusable interfaces
 - **Error Handling** - Centralized and consistent
 
 ## ⚙️ Configuration
