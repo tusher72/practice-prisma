@@ -14,7 +14,6 @@ A robust, production-ready RESTful API built with Node.js, Express, TypeScript, 
 - **Health Checks** - Health monitoring endpoints for application and database
 - **Pagination & Filtering** - Advanced query capabilities for list endpoints
 - **Graceful Shutdown** - Proper resource cleanup on application termination
-- **CLI Tool** - Command-line interface for testing API endpoints
 
 ## 🛠️ Tech Stack
 
@@ -32,7 +31,6 @@ A robust, production-ready RESTful API built with Node.js, Express, TypeScript, 
 - **Logging**: Winston 3.15.0
 - **Security**: Helmet 8.0.0, express-rate-limit 7.4.1
 - **Database**: @prisma/adapter-pg 7.0.0, pg 8.16.3
-- **CLI**: Commander 12.1.0, Axios 1.7.9, Chalk 5.3.0
 
 ## 📋 Prerequisites
 
@@ -70,25 +68,27 @@ Configure the following environment variables:
 
 ```env
 # Application
-NODE_ENV=development
-PORT=3000
+NODE_ENV=development                    # Application environment (development/production/test)
+PORT=3000                               # Server port number
 
 # Database
+# Option 1: Use DATABASE_URL directly
 DATABASE_URL=postgresql://username:password@localhost:5432/database_name?schema=public
 
-# Or use individual database variables
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=secret
-DB_DATABASE=practice_prisma
+# Option 2: Use individual database variables (DATABASE_URL will be constructed automatically)
+DB_HOST=localhost                       # Database host (default: localhost)
+DB_PORT=5432                            # Database port (default: 5432)
+FORWARD_DB_PORT=5432                    # Forwarded database port for Docker (optional, takes precedence over DB_PORT)
+DB_USERNAME=postgres                    # Database username (optional, default: postgres)
+DB_PASSWORD=secret                      # Database password (optional, default: secret)
+DB_DATABASE=practice_prisma             # Database name (optional, default: postgres)
 
 # CORS
-CORS_ORIGIN=*
+CORS_ORIGIN=*                           # Allowed CORS origins (default: *)
 
 # Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_WINDOW_MS=900000             # Rate limit window in milliseconds (default: 900000 = 15 minutes)
+RATE_LIMIT_MAX_REQUESTS=100             # Maximum requests per window (default: 100)
 ```
 
 ### 4. Database Setup
@@ -160,7 +160,6 @@ The API will be available at `http://localhost:3000`
 | `npm run prisma:migrate:deploy` | Apply migrations in production           |
 | `npm run prisma:seed`           | Seed database with sample data           |
 | `npm run format`                | Format code with Prettier                |
-| `npm run cli`                   | Run CLI tool for API testing             |
 
 ## 🔌 API Endpoints
 
@@ -322,26 +321,6 @@ The application uses a hierarchy of custom error classes for consistent error ha
 - Errors (message, stack trace, context)
 - Application events (startup, shutdown)
 
-## 🧪 Testing with CLI
-
-The project includes a CLI tool for testing API endpoints:
-
-```bash
-# Health checks
-npm run cli health:ping
-npm run cli health:check
-
-# Resource operations (examples)
-npm run cli resources:list
-npm run cli resources:get <id>
-npm run cli resources:create --field1 "value1" --field2 "value2"
-npm run cli resources:update <id> --field1 "newValue"
-npm run cli resources:delete <id>
-
-# Run full test suite
-npm run cli test:all
-```
-
 ## 🏗️ Architecture
 
 ### Service Layer Pattern
@@ -366,12 +345,28 @@ Business logic is separated from route handlers following clean architecture pri
 
 All configuration is managed through environment variables with Zod validation:
 
-- **NODE_ENV** - Application environment (development/production/test)
-- **PORT** - Server port (default: 3000)
-- **DATABASE_URL** - PostgreSQL connection string
-- **CORS_ORIGIN** - Allowed CORS origins
-- **RATE_LIMIT_WINDOW_MS** - Rate limit window in milliseconds
-- **RATE_LIMIT_MAX_REQUESTS** - Maximum requests per window
+#### Application Variables
+
+- **NODE_ENV** - Application environment (development/production/test), default: `development`
+- **PORT** - Server port number, default: `3000`
+
+#### Database Variables
+
+- **DATABASE_URL** - PostgreSQL connection string (optional). If provided, takes precedence over individual DB_* variables
+- **DB_HOST** - Database host address, default: `localhost`
+- **DB_PORT** - Database port number, default: `5432`
+- **FORWARD_DB_PORT** - Forwarded database port for Docker (optional). Takes precedence over DB_PORT when provided
+- **DB_USERNAME** - Database username (optional), default: `postgres`
+- **DB_PASSWORD** - Database password (optional), default: `secret`
+- **DB_DATABASE** - Database name (optional), default: `postgres`
+
+**Note**: If `DATABASE_URL` is provided, it will be used directly. Otherwise, the connection string will be constructed from the individual `DB_*` variables.
+
+#### Security Variables
+
+- **CORS_ORIGIN** - Allowed CORS origins (comma-separated for multiple origins), default: `*`
+- **RATE_LIMIT_WINDOW_MS** - Rate limit window in milliseconds, default: `900000` (15 minutes)
+- **RATE_LIMIT_MAX_REQUESTS** - Maximum requests per IP per window, default: `100`
 
 ### Database Configuration
 
