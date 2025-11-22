@@ -46,10 +46,10 @@ export function validateRequest(schema: ZodSchema) {
             next();
         } catch (error: unknown) {
             if (error instanceof ZodError) {
-                const details = error.errors.map((err) => ({
-                    path: err.path.join("."),
-                    message: err.message,
-                    code: err.code,
+                const details = error.errors.map((validationError) => ({
+                    path: validationError.path.join("."),
+                    message: validationError.message,
+                    code: validationError.code,
                 }));
                 next(new ValidationError("Validation failed", details));
             } else {

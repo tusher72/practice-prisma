@@ -27,7 +27,7 @@ import { EnvironmentEnum } from "../enums/environment.enum";
  * ```
  *
  * @function errorHandler
- * @param {Error | AppError} err - The error object
+ * @param {Error | AppError} error - The error object
  * @param {Request} req - Express request object
  * @param {Response} res - Express response object
  * @param {NextFunction} _next - Express next function (unused)
@@ -38,31 +38,31 @@ import { EnvironmentEnum } from "../enums/environment.enum";
  * app.use(errorHandler);
  * ```
  */
-export function errorHandler(err: Error | AppError, req: Request, res: Response, _next: NextFunction): void {
+export function errorHandler(error: Error | AppError, req: Request, res: Response, _next: NextFunction): void {
     // Log error
     logger.error("Error occurred", {
-        error: err.message,
-        stack: err.stack,
+        error: error.message,
+        stack: error.stack,
         path: req.path,
         method: req.method,
         ip: req.ip,
     });
 
     // Handle known AppError
-    if (err instanceof AppError) {
-        res.status(err.statusCode).json({
+    if (error instanceof AppError) {
+        res.status(error.statusCode).json({
             success: false,
             error: {
-                message: err.message,
-                ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { stack: err.stack }),
+                message: error.message,
+                ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { stack: error.stack }),
             },
         });
         return;
     }
 
     // Handle Prisma errors
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        const prismaError = err as Prisma.PrismaClientKnownRequestError;
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const prismaError = error;
         if (prismaError.code === "P2002") {
             res.status(HttpStatusEnum.CONFLICT).json({
                 success: false,
@@ -87,12 +87,12 @@ export function errorHandler(err: Error | AppError, req: Request, res: Response,
     }
 
     // Handle validation errors
-    if (err instanceof Prisma.PrismaClientValidationError) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
         res.status(HttpStatusEnum.BAD_REQUEST).json({
             success: false,
             error: {
                 message: "Invalid input data",
-                ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { details: err.message }),
+                ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { details: error.message }),
             },
         });
         return;
@@ -102,8 +102,8 @@ export function errorHandler(err: Error | AppError, req: Request, res: Response,
     res.status(HttpStatusEnum.INTERNAL_SERVER_ERROR).json({
         success: false,
         error: {
-            message: env.NODE_ENV === EnvironmentEnum.PRODUCTION ? "Internal server error" : err.message,
-            ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { stack: err.stack }),
+            message: env.NODE_ENV === EnvironmentEnum.PRODUCTION ? "Internal server error" : error.message,
+            ...(env.NODE_ENV === EnvironmentEnum.DEVELOPMENT && { stack: error.stack }),
         },
     });
 }

@@ -13,7 +13,7 @@ import { EnvironmentEnum } from "../enums/environment.enum";
  *
  * @constant {z.ZodObject}
  */
-const envSchema = z.object({
+const ENV_SCHEMA = z.object({
     NODE_ENV: z
         .enum([EnvironmentEnum.DEVELOPMENT, EnvironmentEnum.PRODUCTION, EnvironmentEnum.TEST])
         .default(EnvironmentEnum.DEVELOPMENT),
@@ -63,7 +63,7 @@ function getDatabaseUrl(): string {
  * @constant {z.infer<typeof envSchema>}
  * @throws {z.ZodError} If environment variables don't match the schema
  */
-const env = envSchema.parse({
+const env = ENV_SCHEMA.parse({
     ...process.env,
     DATABASE_URL: getDatabaseUrl(),
 });

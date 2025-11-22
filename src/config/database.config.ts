@@ -14,7 +14,7 @@ import logger from "../utils/logger.util";
  *
  * @constant {Pool}
  */
-const pool = new Pool({
+const POOL = new Pool({
     connectionString: env.DATABASE_URL,
     max: 20,
     idleTimeoutMillis: 30000,
@@ -29,8 +29,8 @@ const pool = new Pool({
  *
  * @event Pool#error
  */
-pool.on("error", (err) => {
-    logger.error("Unexpected error on idle client", err);
+POOL.on("error", (error) => {
+    logger.error("Unexpected error on idle client", error);
 });
 
 /**
@@ -41,7 +41,7 @@ pool.on("error", (err) => {
  *
  * @constant {PrismaPg}
  */
-const adapter = new PrismaPg(pool);
+const ADAPTER = new PrismaPg(POOL);
 
 /**
  * Prisma Client instance with PostgreSQL adapter.
@@ -54,7 +54,7 @@ const adapter = new PrismaPg(pool);
  * @constant {PrismaClient}
  */
 export const prisma = new PrismaClient({
-    adapter,
+    adapter: ADAPTER,
     log: [
         { level: "query", emit: "event" },
         { level: "error", emit: "event" },
@@ -66,32 +66,32 @@ export const prisma = new PrismaClient({
  * Logs all Prisma queries for debugging and performance monitoring.
  *
  * @event PrismaClient#query
- * @param {Object} e - Query event object
- * @param {string} e.query - SQL query string
- * @param {number} e.duration - Query execution time in milliseconds
+ * @param {Object} queryEvent - Query event object
+ * @param {string} queryEvent.query - SQL query string
+ * @param {number} queryEvent.duration - Query execution time in milliseconds
  */
-prisma.$on("query", (e) => {
-    logger.debug("Query", { query: e.query, duration: `${e.duration}ms` });
+prisma.$on("query", (queryEvent) => {
+    logger.debug("Query", { query: queryEvent.query, duration: `${queryEvent.duration}ms` });
 });
 
 /**
  * Logs Prisma errors for monitoring and debugging.
  *
  * @event PrismaClient#error
- * @param {Object} e - Error event object
+ * @param {Object} errorEvent - Error event object
  */
-prisma.$on("error", (e) => {
-    logger.error("Prisma error", e);
+prisma.$on("error", (errorEvent) => {
+    logger.error("Prisma error", errorEvent);
 });
 
 /**
  * Logs Prisma warnings for potential issues.
  *
  * @event PrismaClient#warn
- * @param {Object} e - Warning event object
+ * @param {Object} warningEvent - Warning event object
  */
-prisma.$on("warn", (e) => {
-    logger.warn("Prisma warning", e);
+prisma.$on("warn", (warningEvent) => {
+    logger.warn("Prisma warning", warningEvent);
 });
 
 /**
@@ -142,7 +142,7 @@ export async function connectDatabase(): Promise<void> {
 export async function disconnectDatabase(): Promise<void> {
     try {
         await prisma.$disconnect();
-        await pool.end();
+        await POOL.end();
         logger.info("Database disconnected successfully");
     } catch (error) {
         logger.error("Error disconnecting from database", error);
