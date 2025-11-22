@@ -126,11 +126,28 @@ export class UserService {
                 throw new ConflictError("User with this email already exists"); // Return 409 Conflict
             }
 
-            return await this.prisma.user.create({
-                data: {
-                    name: data.name,
-                    email: data.email,
+            // Set default config if not provided
+            const defaultConfig = {
+                tags: [],
+                active: "active",
+                theme: {
+                    primaryColor: "#3b82f6",
+                    secondary: "#8b5cf6",
+                    themeMode: "light",
+                    containerStyle: "bordered",
+                    radius: "md",
+                    font: "Inter",
                 },
+            };
+
+            const userData: any = {
+                name: data.name,
+                email: data.email,
+                config: (data as any).config || defaultConfig, // Use provided config or default
+            };
+
+            return await this.prisma.user.create({
+                data: userData,
                 include: {
                     todos: true, // Include todos in response for immediate access
                 },
