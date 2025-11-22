@@ -4,7 +4,7 @@ A robust, production-ready RESTful API built with Node.js, Express, TypeScript, 
 
 ## ✨ Features
 
-- **RESTful API** - Clean, well-structured REST endpoints for Users and Todos
+- **RESTful API** - Clean, well-structured REST endpoints following industry standards
 - **Type Safety** - Full TypeScript support with strict type checking
 - **Input Validation** - Zod schema validation for all requests
 - **Error Handling** - Centralized error handling with custom error classes
@@ -19,6 +19,7 @@ A robust, production-ready RESTful API built with Node.js, Express, TypeScript, 
 ## 🛠️ Tech Stack
 
 ### Core Technologies
+
 - **Runtime**: Node.js (>=18.0.0)
 - **Framework**: Express.js 5.1.0
 - **Language**: TypeScript 5.8.2
@@ -26,6 +27,7 @@ A robust, production-ready RESTful API built with Node.js, Express, TypeScript, 
 - **ORM**: Prisma 7.0.0
 
 ### Key Dependencies
+
 - **Validation**: Zod 3.24.1
 - **Logging**: Winston 3.15.0
 - **Security**: Helmet 8.0.0, express-rate-limit 7.4.1
@@ -98,6 +100,7 @@ docker-compose up -d
 ```
 
 This will:
+
 - Start PostgreSQL database
 - Run Prisma migrations
 - Seed the database with sample data
@@ -106,33 +109,38 @@ This will:
 #### Option B: Manual Setup
 
 1. **Create Database**:
-   ```bash
-   createdb practice_prisma
-   ```
+
+    ```bash
+    createdb practice_prisma
+    ```
 
 2. **Generate Prisma Client**:
-   ```bash
-   npm run prisma:generate
-   ```
+
+    ```bash
+    npm run prisma:generate
+    ```
 
 3. **Run Migrations**:
-   ```bash
-   npm run prisma:migrate
-   ```
+
+    ```bash
+    npm run prisma:migrate
+    ```
 
 4. **Seed Database**:
-   ```bash
-   npm run prisma:seed
-   ```
+    ```bash
+    npm run prisma:seed
+    ```
 
 ### 5. Start the Application
 
 **Development Mode**:
+
 ```bash
 npm run dev
 ```
 
 **Production Mode**:
+
 ```bash
 npm run build
 npm start
@@ -142,17 +150,17 @@ The API will be available at `http://localhost:3000`
 
 ## 📜 Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Compile TypeScript to JavaScript |
-| `npm start` | Start production server |
-| `npm run prisma:generate` | Generate Prisma Client |
-| `npm run prisma:migrate` | Create and apply database migrations |
-| `npm run prisma:migrate:deploy` | Apply migrations in production |
-| `npm run prisma:seed` | Seed database with sample data |
-| `npm run format` | Format code with Prettier |
-| `npm run cli` | Run CLI tool for API testing |
+| Command                         | Description                              |
+| ------------------------------- | ---------------------------------------- |
+| `npm run dev`                   | Start development server with hot reload |
+| `npm run build`                 | Compile TypeScript to JavaScript         |
+| `npm start`                     | Start production server                  |
+| `npm run prisma:generate`       | Generate Prisma Client                   |
+| `npm run prisma:migrate`        | Create and apply database migrations     |
+| `npm run prisma:migrate:deploy` | Apply migrations in production           |
+| `npm run prisma:seed`           | Seed database with sample data           |
+| `npm run format`                | Format code with Prettier                |
+| `npm run cli`                   | Run CLI tool for API testing             |
 
 ## 🔌 API Endpoints
 
@@ -161,35 +169,30 @@ The API will be available at `http://localhost:3000`
 - `GET /health` - Full health check with database status
 - `GET /health/ping` - Simple ping endpoint
 
-### Users
+### RESTful Resources
 
-- `GET /users` - List all users
-- `GET /users/:id` - Get user by ID
-- `POST /users` - Create a new user
-- `PATCH /users/:id` - Update a user
-- `DELETE /users/:id` - Delete a user
+The API follows RESTful conventions with standard CRUD operations:
 
-### Todos
-
-- `GET /todos` - List todos with pagination and filtering
-  - Query params: `userId`, `completed`, `page`, `limit`
-- `GET /todos/:id` - Get todo by ID
-- `POST /todos` - Create a new todo
-- `PATCH /todos/:id` - Update a todo
-- `DELETE /todos/:id` - Delete a todo
+- `GET /resources` - List all resources with optional pagination and filtering
+- `GET /resources/:id` - Get a specific resource by ID
+- `POST /resources` - Create a new resource
+- `PATCH /resources/:id` - Update an existing resource
+- `DELETE /resources/:id` - Delete a resource
 
 ### Example Requests
 
-**Create User**:
+**Create Resource**:
+
 ```bash
-curl -X POST http://localhost:3000/users \
+curl -X POST http://localhost:3000/resources \
   -H "Content-Type: application/json" \
-  -d '{"name": "John Doe", "email": "john@example.com"}'
+  -d '{"field1": "value1", "field2": "value2"}'
 ```
 
-**List Todos with Filters**:
+**List Resources with Filters**:
+
 ```bash
-curl "http://localhost:3000/todos?userId=1&completed=false&page=1&limit=10"
+curl "http://localhost:3000/resources?filter=value&page=1&limit=10"
 ```
 
 ## 📁 Project Structure
@@ -211,18 +214,15 @@ practice-prisma/
 │   │   └── validate-request.middleware.ts
 │   ├── routes/          # Route handlers
 │   │   ├── health.routes.ts
-│   │   ├── todos.routes.ts
-│   │   └── users.routes.ts
+│   │   └── *.routes.ts
 │   ├── services/        # Business logic
-│   │   ├── todo.service.ts
-│   │   └── user.service.ts
+│   │   └── *.service.ts
 │   ├── types/           # TypeScript types
 │   │   └── errors.types.ts
 │   ├── utils/           # Utility functions
 │   │   └── logger.util.ts
 │   ├── validators/      # Validation schemas
-│   │   ├── todo.validator.ts
-│   │   └── user.validator.ts
+│   │   └── *.validator.ts
 │   └── server.ts        # Application entry point
 ├── prisma/
 │   ├── schema.prisma    # Database schema
@@ -238,22 +238,26 @@ practice-prisma/
 ## 🔒 Security Features
 
 ### 1. **Helmet.js**
+
 - Sets secure HTTP headers
 - Protects against XSS attacks
 - Content Security Policy
 - Prevents clickjacking
 
 ### 2. **Rate Limiting**
+
 - Configurable request limits per IP
 - Default: 100 requests per 15 minutes
 - Prevents abuse and DDoS attacks
 
 ### 3. **CORS Configuration**
+
 - Configurable allowed origins
 - Supports multiple origins
 - Credentials support
 
 ### 4. **Input Validation**
+
 - Zod schema validation for all endpoints
 - Type-safe request handling
 - Prevents SQL injection and invalid data
@@ -261,6 +265,7 @@ practice-prisma/
 - String length limits
 
 ### 5. **Error Sanitization**
+
 - Detailed errors in development
 - Sanitized errors in production
 - No sensitive information leakage
@@ -269,10 +274,12 @@ practice-prisma/
 
 ### Custom Error Classes
 
+The application uses a hierarchy of custom error classes for consistent error handling:
+
 - **AppError** - Base error class with HTTP status codes
 - **ValidationError** - 400 Bad Request for validation failures
 - **NotFoundError** - 404 Not Found for missing resources
-- **ConflictError** - 409 Conflict for duplicate entries
+- **ConflictError** - 409 Conflict for duplicate entries or constraint violations
 
 ### Error Response Format
 
@@ -297,16 +304,16 @@ practice-prisma/
 ### Winston Logger Configuration
 
 - **File Logging**:
-  - `logs/error.log` - Error-level logs only
-  - `logs/combined.log` - All logs
+    - `logs/error.log` - Error-level logs only
+    - `logs/combined.log` - All logs
 
 - **Console Logging**:
-  - Colorized output in development
-  - JSON format in production
+    - Colorized output in development
+    - JSON format in production
 
 - **Log Levels**:
-  - Production: `info`
-  - Development: `debug`
+    - Production: `info`
+    - Development: `debug`
 
 ### Logged Information
 
@@ -324,20 +331,12 @@ The project includes a CLI tool for testing API endpoints:
 npm run cli health:ping
 npm run cli health:check
 
-# User operations
-npm run cli users:list
-npm run cli users:get <id>
-npm run cli users:create --name "John" --email "john@example.com"
-npm run cli users:update <id> --name "Jane"
-npm run cli users:delete <id>
-
-# Todo operations
-npm run cli todos:list
-npm run cli todos:list --userId 1 --completed false
-npm run cli todos:get <id>
-npm run cli todos:create --title "Task" --userId 1
-npm run cli todos:update <id> --completed true
-npm run cli todos:delete <id>
+# Resource operations (examples)
+npm run cli resources:list
+npm run cli resources:get <id>
+npm run cli resources:create --field1 "value1" --field2 "value2"
+npm run cli resources:update <id> --field1 "newValue"
+npm run cli resources:delete <id>
 
 # Run full test suite
 npm run cli test:all
@@ -347,11 +346,12 @@ npm run cli test:all
 
 ### Service Layer Pattern
 
-Business logic is separated from route handlers:
-- **Routes** - Handle HTTP requests/responses
-- **Services** - Contain business logic
-- **Validators** - Validate input data
-- **Middleware** - Cross-cutting concerns
+Business logic is separated from route handlers following clean architecture principles:
+
+- **Routes** - Handle HTTP requests/responses and route definitions
+- **Services** - Contain business logic and data access operations
+- **Validators** - Validate and sanitize input data
+- **Middleware** - Handle cross-cutting concerns (logging, error handling, authentication)
 
 ### Code Organization
 
@@ -447,63 +447,63 @@ This project is private and for practice purposes.
 ### Short-term Goals
 
 - [ ] **Unit Testing**
-  - Add unit tests for services
-  - Test coverage for business logic
-  - Mock database operations
+    - Add unit tests for services
+    - Test coverage for business logic
+    - Mock database operations
 
 - [ ] **Integration Testing**
-  - API endpoint testing
-  - Database integration tests
-  - End-to-end test scenarios
+    - API endpoint testing
+    - Database integration tests
+    - End-to-end test scenarios
 
 - [ ] **API Documentation**
-  - Swagger/OpenAPI documentation
-  - Interactive API explorer
-  - Request/response examples
+    - Swagger/OpenAPI documentation
+    - Interactive API explorer
+    - Request/response examples
 
 ### Medium-term Goals
 
 - [ ] **Authentication & Authorization**
-  - JWT-based authentication
-  - Refresh token mechanism
-  - Role-based access control (RBAC)
-  - Password hashing with bcrypt
+    - JWT-based authentication
+    - Refresh token mechanism
+    - Role-based access control (RBAC)
+    - Password hashing with bcrypt
 
 - [ ] **API Versioning**
-  - Version management strategy
-  - Backward compatibility
-  - Deprecation handling
+    - Version management strategy
+    - Backward compatibility
+    - Deprecation handling
 
 - [ ] **Caching**
-  - Redis integration
-  - Query result caching
-  - Response caching middleware
+    - Redis integration
+    - Query result caching
+    - Response caching middleware
 
 ### Long-term Goals
 
 - [ ] **Monitoring & Observability**
-  - Application Performance Monitoring (APM)
-  - Error tracking (Sentry integration)
-  - Metrics collection (Prometheus)
-  - Distributed tracing
+    - Application Performance Monitoring (APM)
+    - Error tracking (Sentry integration)
+    - Metrics collection (Prometheus)
+    - Distributed tracing
 
 - [ ] **CI/CD Pipeline**
-  - GitHub Actions workflows
-  - Automated testing
-  - Code quality checks
-  - Deployment automation
+    - GitHub Actions workflows
+    - Automated testing
+    - Code quality checks
+    - Deployment automation
 
 - [ ] **Advanced Features**
-  - WebSocket support
-  - Real-time notifications
-  - File upload handling
-  - Background job processing
+    - WebSocket support
+    - Real-time notifications
+    - File upload handling
+    - Background job processing
 
 - [ ] **Documentation**
-  - API documentation site
-  - Architecture diagrams
-  - Deployment guides
-  - Contributing guidelines
+    - API documentation site
+    - Architecture diagrams
+    - Deployment guides
+    - Contributing guidelines
 
 ## 📞 Support
 
@@ -512,4 +512,3 @@ For questions or issues, please refer to the project documentation or create an 
 ---
 
 **Built with ❤️ using TypeScript, Express, and Prisma**
-
