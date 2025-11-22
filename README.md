@@ -81,7 +81,7 @@ DB_PORT=5432                            # Database port (default: 5432)
 FORWARD_DB_PORT=5432                    # Forwarded database port for Docker (optional, takes precedence over DB_PORT)
 DB_USERNAME=postgres                    # Database username (optional, default: postgres)
 DB_PASSWORD=secret                      # Database password (optional, default: secret)
-DB_DATABASE=practice_prisma             # Database name (optional, default: postgres)
+DB_DATABASE=your_database_name          # Database name (optional, default: postgres)
 
 # CORS
 CORS_ORIGIN=*                           # Allowed CORS origins (default: *)
@@ -111,8 +111,10 @@ This will:
 1. **Create Database**:
 
     ```bash
-    createdb practice_prisma
+    createdb your_database_name
     ```
+
+    Or use the default `postgres` database if you haven't set `DB_DATABASE`.
 
 2. **Generate Prisma Client**:
 
@@ -352,7 +354,7 @@ All configuration is managed through environment variables with Zod validation:
 
 #### Database Variables
 
-- **DATABASE_URL** - PostgreSQL connection string (optional). If provided, takes precedence over individual DB_* variables
+- **DATABASE_URL** - PostgreSQL connection string (optional). If provided, takes precedence over individual DB\_\* variables
 - **DB_HOST** - Database host address, default: `localhost`
 - **DB_PORT** - Database port number, default: `5432`
 - **FORWARD_DB_PORT** - Forwarded database port for Docker (optional). Takes precedence over DB_PORT when provided
