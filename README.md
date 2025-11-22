@@ -113,11 +113,13 @@ This will:
     You have several options to create the database:
 
     **Option 1: Using `createdb` command** (requires PostgreSQL client tools):
+
     ```bash
     createdb your_database_name
     ```
 
     **Option 2: Using `psql` command**:
+
     ```bash
     psql -U postgres -c "CREATE DATABASE your_database_name;"
     ```
