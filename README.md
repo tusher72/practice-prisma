@@ -110,11 +110,24 @@ This will:
 
 1. **Create Database**:
 
+    You have several options to create the database:
+
+    **Option 1: Using `createdb` command** (requires PostgreSQL client tools):
     ```bash
     createdb your_database_name
     ```
 
-    Or use the default `postgres` database if you haven't set `DB_DATABASE`.
+    **Option 2: Using `psql` command**:
+    ```bash
+    psql -U postgres -c "CREATE DATABASE your_database_name;"
+    ```
+
+    **Option 3: Let Prisma create it** (if your PostgreSQL user has database creation privileges):
+    - Skip this step and Prisma migrations will attempt to create the database automatically
+    - Ensure your `DB_USERNAME` has `CREATEDB` privilege
+
+    **Option 4: Use the default `postgres` database**:
+    - If you haven't set `DB_DATABASE`, the application will use the default `postgres` database
 
 2. **Generate Prisma Client**:
 
