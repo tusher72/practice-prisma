@@ -2,15 +2,16 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+
 import { connectDatabase, disconnectDatabase, prisma } from "./config/database.config";
 import env from "./config/env.config";
-import logger from "./utils/logger.util";
 import { errorHandler } from "./middleware/error-handler.middleware";
 import { notFoundHandler } from "./middleware/not-found-handler.middleware";
 import { requestLogger } from "./middleware/request-logger.middleware";
-import { createUsersRouter } from "./routes/users.routes";
-import { createTodosRouter } from "./routes/todos.routes";
 import { createHealthRouter } from "./routes/health.routes";
+import { createTodosRouter } from "./routes/todos.routes";
+import { createUsersRouter } from "./routes/users.routes";
+import logger from "./utils/logger.util";
 
 // Express application instance.
 const app = express();

@@ -1,10 +1,11 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { UserService } from "../services/user.service";
+
+import { HttpStatusEnum } from "../enums/http-status.enum";
 import { createAsyncHandler } from "../middleware/async-handler.middleware";
 import { validateRequest } from "../middleware/validate-request.middleware";
+import { UserService } from "../services/user.service";
 import { createUserSchema, updateUserSchema, getUserSchema, deleteUserSchema } from "../validators/user.validator";
-import { HttpStatusEnum } from "../enums/http-status.enum";
 
 /**
  * Creates and configures the users router.

@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
+
 import { prisma } from "../config/database.config";
+import { HttpStatusEnum } from "../enums/http-status.enum";
 import { createAsyncHandler } from "../middleware/async-handler.middleware";
 import logger from "../utils/logger.util";
-import { HttpStatusEnum } from "../enums/http-status.enum";
 
 /**
  * Creates and configures the health check router.

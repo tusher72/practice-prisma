@@ -1,4 +1,5 @@
 import winston from "winston";
+
 import env from "../config/env.config";
 import { EnvironmentEnum } from "../enums/environment.enum";
 

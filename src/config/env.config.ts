@@ -1,5 +1,6 @@
 import { z } from "zod";
 import "dotenv/config";
+
 import { EnvironmentEnum } from "../enums/environment.enum";
 
 /**
