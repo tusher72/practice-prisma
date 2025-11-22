@@ -41,6 +41,8 @@ export function createTodosRouter(prisma: PrismaClient): Router {
             const filters = {
                 userId: typeof req.query.userId === "number" ? req.query.userId : undefined, // Filter by user if provided
                 completed: typeof req.query.completed === "boolean" ? req.query.completed : undefined, // Filter by completion status if provided
+                tag: typeof req.query.tag === "string" ? req.query.tag : undefined, // Filter by tag if provided
+                isExpired: typeof req.query.isExpired === "boolean" ? req.query.isExpired : undefined, // Filter by expiration status if provided
                 page:
                     typeof req.query.page === "number"
                         ? req.query.page
@@ -80,6 +82,9 @@ export function createTodosRouter(prisma: PrismaClient): Router {
             const todo = await todoService.create({
                 title: req.body.title,
                 userId: req.body.userId, // Optional user association
+                startedTime: req.body.startedTime, // Optional start time
+                duration: req.body.duration, // Optional duration in minutes
+                tags: req.body.tags, // Optional tags array
             });
             res.status(HttpStatusEnum.CREATED).json({
                 success: true,
@@ -94,7 +99,24 @@ export function createTodosRouter(prisma: PrismaClient): Router {
         createAsyncHandler(async (req: Request, res: Response) => {
             // PATCH /todos/:id - Update an existing todo
             const id = req.params.id as unknown as number;
-            const todo = await todoService.update(id, req.body);
+            const updateData: {
+                title?: string;
+                completed?: boolean;
+                startedTime?: Date | string;
+                duration?: number;
+                tags?: string[];
+            } = {};
+
+            if (req.body.title !== undefined) updateData.title = req.body.title;
+            if (req.body.completed !== undefined) updateData.completed = req.body.completed;
+            if (req.body.startedTime !== undefined) {
+                updateData.startedTime =
+                    typeof req.body.startedTime === "string" ? new Date(req.body.startedTime) : req.body.startedTime;
+            }
+            if (req.body.duration !== undefined) updateData.duration = req.body.duration;
+            if (req.body.tags !== undefined) updateData.tags = req.body.tags;
+
+            const todo = await todoService.update(id, updateData);
             res.json({
                 success: true,
                 data: todo,

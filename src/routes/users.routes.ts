@@ -57,7 +57,18 @@ export function createUsersRouter(prisma: PrismaClient): Router {
         validateRequest(createUserSchema),
         createAsyncHandler(async (req: Request, res: Response) => {
             // POST /users - Create a new user
-            const user = await userService.create(req.body);
+            const userData: {
+                name: string;
+                email: string;
+                config?: object;
+            } = {
+                name: req.body.name,
+                email: req.body.email,
+            };
+            if (req.body.config !== undefined) {
+                userData.config = req.body.config;
+            }
+            const user = await userService.create(userData);
             res.status(HttpStatusEnum.CREATED).json({
                 success: true,
                 data: user,
@@ -71,7 +82,17 @@ export function createUsersRouter(prisma: PrismaClient): Router {
         createAsyncHandler(async (req: Request, res: Response) => {
             // PATCH /users/:id - Update an existing user
             const id = req.params.id as unknown as number;
-            const user = await userService.update(id, req.body);
+            const updateData: {
+                name?: string;
+                email?: string;
+                config?: object;
+            } = {};
+
+            if (req.body.name !== undefined) updateData.name = req.body.name;
+            if (req.body.email !== undefined) updateData.email = req.body.email;
+            if (req.body.config !== undefined) updateData.config = req.body.config;
+
+            const user = await userService.update(id, updateData);
             res.json({
                 success: true,
                 data: user,
