@@ -35,6 +35,8 @@ This document outlines the coding standards, naming conventions, and best practi
 #### TypeScript Files
 
 - **Services**: `*.service.ts` (e.g., `user.service.ts`, `todo.service.ts`)
+- **Repositories**: `repositories/<resource>/*.repository.ts` (e.g., `repositories/users/user.repository.ts`, `repositories/todos/todo.repository.ts`)
+- **Repository Types**: `repositories/<resource>/*.types.ts` (e.g., `repositories/users/user.types.ts`, `repositories/todos/todo.types.ts`)
 - **Routes**: `*.routes.ts` (e.g., `users.routes.ts`, `todos.routes.ts`)
 - **Middleware**: `*.middleware.ts` or descriptive name (e.g., `errorHandler.middleware.ts`, `validateRequest.middleware.ts`)
 - **Validators**: `*.validator.ts` (e.g., `user.validator.ts`, `todo.validator.ts`)
@@ -88,15 +90,19 @@ This document outlines the coding standards, naming conventions, and best practi
 
 ```
 src/
-├── config/          # Configuration files
-├── constants/       # Constant definitions
-├── enums/           # Enum definitions
-├── middleware/      # Express middleware
-├── routes/          # Route handlers
-├── services/        # Business logic services
-├── types/           # TypeScript type definitions
-├── utils/           # Utility functions
-└── validators/      # Validation schemas
+├── config/                                 # Configuration files
+├── constants/                              # Constant definitions
+├── enums/                                  # Enum definitions
+├── middleware/                             # Express middleware
+├── repositories/                           # Data access layer (repository pattern)
+│   └── <resource-name>/                    # resource repository
+│       ├── <resource-name>.repository.ts   # repository implementation
+│       └── <resource-name>.types.ts        # repository types
+├── routes/                                 # Route handlers
+├── services/                               # Business logic services
+├── types/                                  # TypeScript type definitions
+├── utils/                                  # Utility functions
+└── validators/                             # Validation schemas
 ```
 
 ### Examples
@@ -521,32 +527,40 @@ type apiResponse = { } // camelCase
 #### JSDoc Comments
 
 - Use for all exported functions, classes, interfaces, and modules
-- Include description, parameters, return types, and examples when helpful
+- Keep comments concise - use single-line format when possible
+- Condense multi-line comments to single lines (e.g., 2-5 lines → 1 line)
+- Include essential information only
 
-````typescript
+```typescript
 ✅ Good:
-/**
- * Retrieves a user by their unique ID.
- *
- * @param {number} id - The unique identifier of the user
- * @returns {Promise<User>} A promise that resolves to the user object
- * @throws {NotFoundError} If no user is found with the given ID
- *
- * @example
- * ```typescript
- * const user = await userService.findById(1);
- * ```
- */
-async findById(id: number): Promise<User> {
-    // Implementation
+/** Repository class for user database operations. */
+class UserRepository {
+    // ...
+}
+
+/** Service class for user-related business logic. */
+class UserService {
+    // ...
+}
+
+/** User response interface. */
+export interface UserResponse {
+    // ...
 }
 
 ❌ Bad:
-// Gets user by id
-async findById(id: number): Promise<User> {
-    // Implementation
+/**
+ * Repository class for user database operations.
+ *
+ * Handles all database queries and commands for user-related operations.
+ * This layer abstracts database access from business logic.
+ *
+ * @class UserRepository
+ */
+class UserRepository {
+    // ...
 }
-````
+```
 
 #### Inline Comments
 
@@ -652,11 +666,11 @@ export default createUserRouter;
 ✅ Good:
 class UserService {
     // 1. Properties
-    private readonly prisma: PrismaClient;
+    private readonly userRepository: UserRepository;
 
     // 2. Constructor
-    constructor(prisma: PrismaClient) {
-        this.prisma = prisma;
+    constructor(userRepository: UserRepository) {
+        this.userRepository = userRepository;
     }
 
     // 3. Public methods
@@ -667,6 +681,77 @@ class UserService {
     // 4. Private methods
     private validateUser(user: User): void {
         // Implementation
+    }
+}
+```
+
+### Architecture Pattern: Repository Pattern
+
+The codebase follows the **Repository Pattern** to separate data access logic from business logic:
+
+#### Layer Responsibilities
+
+1. **Routes** - Handle HTTP requests/responses, route definitions
+2. **Services** - Contain business logic, orchestrate operations, handle validation
+3. **Repositories** - Handle all database queries and commands, abstract data access
+4. **Types** - Define request/response types for repositories
+
+#### Repository Pattern Rules
+
+- **Repositories** (`repositories/<resource>/*.repository.ts`):
+    - Organized by resource in separate folders (e.g., `repositories/users/`, `repositories/todos/`)
+    - Contain ALL database queries and commands
+    - Use Prisma Client directly
+    - Methods should be focused on data access only
+    - No business logic in repositories
+
+- **Services** (`services/*.service.ts`):
+    - Contain business logic and validation
+    - Call repository methods, never Prisma directly
+    - Handle error transformation (e.g., null → NotFoundError)
+    - Orchestrate multiple repository calls if needed
+    - No direct database access
+
+- **Repository Types** (`repositories/<resource>/*.types.ts`):
+    - Located in the same folder as the repository (e.g., `repositories/users/user.types.ts`)
+    - Define request interfaces (e.g., `CreateUserRequest`, `FindUserByIdRequest`)
+    - Define response interfaces (e.g., `UserResponse`, `TodoResponse`)
+    - Use separate interfaces for nested structures (e.g., `UserTheme`, `UserConfig`, `UserInfo`)
+    - Reuse interfaces across resources when needed (e.g., import `TodoResponse` from `todos/todo.types.ts`)
+    - All interfaces should be flat (no nested interfaces)
+    - Separate from domain types to allow flexibility
+
+```typescript
+✅ Good:
+// repositories/users/user.repository.ts
+/** Repository class for user database operations. */
+class UserRepository {
+    async findById(request: FindUserByIdRequest): Promise<UserResponse | null> {
+        return await this.prisma.user.findUnique({ where: { id: request.id } });
+    }
+}
+
+// services/user.service.ts
+/** Service class for user-related business logic. */
+class UserService {
+    constructor(private readonly userRepository: UserRepository) {}
+
+    async findById(id: number): Promise<UserResponse> {
+        const user = await this.userRepository.findById({ id });
+        if (!user) {
+            throw new NotFoundError("User", id);
+        }
+        return user;
+    }
+}
+
+❌ Bad:
+// Service directly accessing database
+class UserService {
+    constructor(private readonly prisma: PrismaClient) {}
+
+    async findById(id: number): Promise<User> {
+        return await this.prisma.user.findUnique({ where: { id } });
     }
 }
 ```
@@ -823,6 +908,108 @@ GET    /users_list (snake_case)
 ---
 
 ## Database Conventions
+
+### Repository Pattern
+
+- **All database queries and commands** must be in repository classes
+- Services should **never** directly access Prisma Client
+- Repositories handle data access, services handle business logic
+- Repositories are organized by resource in separate folders (e.g., `repositories/users/`, `repositories/todos/`)
+- Each resource folder contains the repository file and types file
+
+```typescript
+✅ Good:
+// repositories/users/user.repository.ts
+/** Repository class for user database operations. */
+class UserRepository {
+    async create(request: CreateUserRequest): Promise<UserResponse> {
+        return await this.prisma.user.create({ data: request });
+    }
+}
+
+// services/user.service.ts
+/** Service class for user-related business logic. */
+class UserService {
+    constructor(private readonly userRepository: UserRepository) {}
+
+    async create(data: CreateUserData): Promise<UserResponse> {
+        const existing = await this.userRepository.findByEmail({ email: data.email });
+        if (existing) {
+            throw new ConflictError("Email already exists");
+        }
+        return await this.userRepository.create(data);
+    }
+}
+
+❌ Bad:
+// Service directly accessing database
+class UserService {
+    constructor(private readonly prisma: PrismaClient) {}
+
+    async create(data: CreateUserData): Promise<User> {
+        return await this.prisma.user.create({ data });
+    }
+}
+```
+
+### Repository Request/Response Types
+
+- Request types: `*Request` (e.g., `CreateUserRequest`, `FindAllTodosRequest`)
+- Response types: `*Response` (e.g., `UserResponse`, `TodoResponse`)
+- Types should be defined in `repositories/<resource>/*.types.ts` (same folder as repository)
+- Use separate interfaces for nested structures (e.g., `UserTheme`, `UserConfig`, `UserInfo`)
+- Reuse interfaces across resources when needed (e.g., import `TodoResponse` from `todos/todo.types.ts`)
+- Request types should be specific to the operation
+- Response types should match the data structure returned from database
+- All interfaces should be flat (no nested interfaces)
+
+```typescript
+✅ Good:
+// repositories/users/user.types.ts
+/** User theme configuration interface. */
+export interface UserTheme {
+    primaryColor: string;
+    secondary: string;
+    themeMode: string;
+}
+
+/** User configuration interface. */
+export interface UserConfig {
+    tags: string[];
+    active: string;
+    theme: UserTheme;
+}
+
+/** User response interface. */
+export interface UserResponse {
+    id: number;
+    name: string;
+    email: string;
+    config: UserConfig | null;
+}
+
+/** Request interface for creating a user. */
+export interface CreateUserRequest {
+    name: string;
+    email: string;
+    config?: UserConfig;
+}
+
+❌ Bad:
+// Using Prisma types directly in services
+async create(data: Prisma.UserCreateInput): Promise<Prisma.User> {
+    // ...
+}
+
+// Nested interfaces
+export interface UserResponse {
+    config: {
+        theme: {
+            primaryColor: string;
+        };
+    };
+}
+```
 
 ### Table/Model Naming
 

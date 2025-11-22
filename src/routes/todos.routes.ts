@@ -5,6 +5,8 @@ import { HttpStatusEnum } from "../enums/http-status.enum";
 import { createAsyncHandler } from "../middleware/async-handler.middleware";
 import { validateRequest } from "../middleware/validate-request.middleware";
 import { TodoService } from "../services/todo.service";
+import { TodoRepository } from "../repositories/todos/todo.repository";
+import { UserRepository } from "../repositories/users/user.repository";
 import {
     createTodoSchema,
     updateTodoSchema,
@@ -31,7 +33,9 @@ import {
  */
 export function createTodosRouter(prisma: PrismaClient): Router {
     const router = Router();
-    const todoService = new TodoService(prisma);
+    const todoRepository = new TodoRepository(prisma);
+    const userRepository = new UserRepository(prisma);
+    const todoService = new TodoService(todoRepository, userRepository);
 
     router.get(
         "/",

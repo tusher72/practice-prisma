@@ -5,6 +5,7 @@ import { HttpStatusEnum } from "../enums/http-status.enum";
 import { createAsyncHandler } from "../middleware/async-handler.middleware";
 import { validateRequest } from "../middleware/validate-request.middleware";
 import { UserService } from "../services/user.service";
+import { UserRepository } from "../repositories/users/user.repository";
 import { createUserSchema, updateUserSchema, getUserSchema, deleteUserSchema } from "../validators/user.validator";
 
 /**
@@ -24,7 +25,8 @@ import { createUserSchema, updateUserSchema, getUserSchema, deleteUserSchema } f
  */
 export function createUsersRouter(prisma: PrismaClient): Router {
     const router = Router();
-    const userService = new UserService(prisma);
+    const userRepository = new UserRepository(prisma);
+    const userService = new UserService(userRepository);
 
     router.get(
         "/",
