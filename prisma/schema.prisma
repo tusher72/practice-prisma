@@ -8,18 +8,23 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String
-  todos Todo[]
+  id     Int      @id @default(autoincrement())
+  email  String   @unique
+  name   String
+  config Json?    @default("{\"tags\":[],\"active\":\"active\",\"theme\":{\"primaryColor\":\"#3b82f6\",\"secondary\":\"#8b5cf6\",\"themeMode\":\"light\",\"containerStyle\":\"bordered\",\"radius\":\"md\",\"font\":\"Inter\"}}")
+  todos  Todo[]
 }
 
 model Todo {
-  id        Int      @id @default(autoincrement())
-  title     String
-  completed Boolean  @default(false)
-  userId    Int
-  user      User?    @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int       @id @default(autoincrement())
+  title       String
+  completed   Boolean   @default(false)
+  startedTime DateTime?
+  duration    Int?      // Duration in minutes
+  isExpired   Boolean   @default(false)
+  tags        String[]  @default([])
+  userId      Int
+  user        User?     @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
